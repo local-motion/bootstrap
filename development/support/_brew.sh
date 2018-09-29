@@ -20,12 +20,11 @@ brew::install() {
 
         # https://stackoverflow.com/questions/20802320/detect-if-homebrew-package-is-installed
         set +e
+        # shellcheck disable=SC2230,SC2143
         if [[ -z "$(which /usr/local/bin/${brew_name})" && -z "$(brew list -1 | grep "^${brew_name}\$";)" ]]; then
             [[ ! -z "${tap_name}" ]] && brew tap ${tap_name}
             echo "Installing ${brew_name}..."
             brew install ${brew_name} > /dev/null
-#        else
-#            echo "Already installed ${brew_name}..."
         fi
         set -e
     done
