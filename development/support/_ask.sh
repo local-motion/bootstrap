@@ -24,6 +24,7 @@ ask() {
         echo -n "$1 [$prompt] "
 
         # Read the answer (use /dev/tty in case stdin is redirected from somewhere else)
+        # shellcheck disable=SC2162
         read reply </dev/tty
 
         # Default?

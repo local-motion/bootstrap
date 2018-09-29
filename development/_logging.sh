@@ -4,6 +4,7 @@
 # https://istio.io/docs/tasks/telemetry/fluentd/
 #
 
+# shellcheck source=./support/_brew.sh
 source support/_brew.sh
 brew::install kubectl
 

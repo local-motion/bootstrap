@@ -1,21 +1,29 @@
 #!/usr/bin/env bash
-
 #
 # Make sure you've installed docker-edge
 # Enable Kubernetes support -- https://docs.docker.com/docker-for-mac/kubernetes/
 #
-script_name=$(basename -- $0)
+LEVEL=0
+ASK_FOR_PERMISSION=true
+PERFORM_CLEANUP_ONLY=false
+PERFORM_CLEANUP_FIRST=false
 
+# shellcheck source=./support/_brew.sh
 source support/_brew.sh
 brew::install kubectl jq
 
+# shellcheck source=./support/_utils.sh
 source support/_utils.sh
+# shellcheck source=support/_ask.sh
+source support/_ask.sh
+# shellcheck source=./_istio.sh
 source _istio.sh
+# shellcheck source=./_port_forward.sh
 source _port_forward.sh
+# shellcheck source=./_logging.sh
 source _logging.sh
+# shellcheck source=./_telemetry.sh
 source _telemetry.sh
-
-
 
 bootstrap::usage() {
   if [ -n "$1" ]; then
@@ -51,33 +59,54 @@ esac; done
 # verify params
 if [[ -z "${NAME}" ]]; then bootstrap::usage "Unique project/team name is not set"; fi;
 
+# https://serverfault.com/questions/414810/sh-conditional-redirection
+exec 6>/dev/null
+if [[ ${LEVEL} -ge 8 ]]; then
+    info "Verbose mode."
+    exec 6>&1
+fi
+
+
 kube::_uninstall_dashboard() {
-    kubectl delete -f https://raw.githubusercontent.com/kubernetes/dashboard/master/src/deploy/recommended/kubernetes-dashboard.yaml || true
+    kubectl delete -f https://raw.githubusercontent.com/kubernetes/dashboard/master/src/deploy/recommended/kubernetes-dashboard.yaml >&6 2>&1 || true
 }
 
 kube::_install_dashboard() {
-    kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/master/src/deploy/recommended/kubernetes-dashboard.yaml
+    kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/master/src/deploy/recommended/kubernetes-dashboard.yaml >&6 2>&1
     echo "Run 'kubectl proxy' and then the Kubernetes dashboard can be found at http://localhost:8001/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/"
 }
 
 bootstrap::cleanup() {
     info "Cleaning up the running Kube cluster first"
 
+    if [[ ${ASK_FOR_PERMISSION} = true ]]; then
+        ask "Delete everything from Kubernetes cluster?" Y || exit 1
+    fi
+
+    debug "Stopping port-forwards"
     port-forward::stop_all > uninstall.log 2>&1
+
+    debug "Uninstalling Istio telemetry"
     telemetry::uninstall > uninstall.log 2>&1
+
+    debug "Uninstalling Istio logging stack (Kibana, ElasticSearch, Fluentd)"
     logging::uninstall > uninstall.log 2>&1
+
+    debug "Uninstalling remaining Istio Pilot, Mixer and Envoy"
     istio::uninstall > uninstall.log 2>&1
+
+    debug "Uninstalling Kubernetes dashboard"
     kube::_uninstall_dashboard > uninstall.log 2>&1
 }
 
 bootstrap::all() {
     info "Start bootstrap"
 
-    kube::_install_dashboard
+    kube::_install_dashboard >&6 2>&1
 
-    istio::install
-    logging::install
-    telemetry::install
+    istio::install >&6 2>&1
+    logging::install >&6 2>&1
+    telemetry::install >&6 2>&1
 
     kube::wait_until_all_pods_are_running
     port-forward::setup
@@ -91,6 +120,5 @@ else
     if [[ ${PERFORM_CLEANUP_FIRST} = true ]]; then
         bootstrap::cleanup
     fi
-    # Don't use './assume_role.sh' since environment variables need to be shared
     bootstrap::all
 fi

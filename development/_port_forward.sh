@@ -15,8 +15,10 @@ port-forward::forward() {
     local app_label=$2
     local local_port=$3
     local container_port=$4
+    local pod= #SC2155
 
-    kubectl -n ${namespace} port-forward $(kubectl -n ${namespace} get pod -l app=${app_label} -o jsonpath='{.items[0].metadata.name}') ${local_port}:${container_port} > forward.log 2>&1 &
+    pod=$(kube::get_pod "${namespace}" "${app_label}")
+    kubectl -n "${namespace}" port-forward "${pod}" "${local_port}:${container_port}" > forward.log 2>&1 &
     info "${namespace}:${app_label} - http://localhost:${local_port}"
 }
 
