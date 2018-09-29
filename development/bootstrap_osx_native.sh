@@ -73,7 +73,15 @@ kube::_uninstall_dashboard() {
 
 kube::_install_dashboard() {
     kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/master/src/deploy/recommended/kubernetes-dashboard.yaml >&6 2>&1
-    echo "Run 'kubectl proxy' and then the Kubernetes dashboard can be found at http://localhost:8001/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/"
+    info "Run 'kubectl proxy' and then the Kubernetes dashboard can be found at http://localhost:8001/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/"
+}
+
+bootstrap::_setup_port_forwards() {
+    kube::wait_until_all_pods_are_running
+
+    logging::port_forwards
+    telemetry::port_forwards
+    istio::port_forwards
 }
 
 bootstrap::cleanup() {
@@ -102,14 +110,20 @@ bootstrap::cleanup() {
 bootstrap::all() {
     info "Start bootstrap"
 
+    debug "Installing Kubernetes Dashboard"
     kube::_install_dashboard >&6 2>&1
 
+    debug "Installing Istio Pilot, Mixer and Envoy"
     istio::install >&6 2>&1
+
+    debug "Installing Istio logging stack (Kibana, ElasticSearch, Fluentd)"
     logging::install >&6 2>&1
+
+    debug "Installing Istio telemetry"
     telemetry::install >&6 2>&1
 
-    kube::wait_until_all_pods_are_running
-    port-forward::setup
+    debug "Setting up port-forwards"
+    bootstrap::_setup_port_forwards
 
     info "Done."
 }
