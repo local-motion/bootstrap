@@ -59,21 +59,15 @@ esac; done
 # verify params
 if [[ -z "${NAME}" ]]; then bootstrap::usage "Unique project/team name is not set"; fi;
 
-# https://serverfault.com/questions/414810/sh-conditional-redirection
-exec 6>/dev/null
-if [[ ${LEVEL} -ge 8 ]]; then
-    info "Verbose mode."
-    exec 6>&1
-fi
-
-
-kube::_uninstall_dashboard() {
-    kubectl delete -f https://raw.githubusercontent.com/kubernetes/dashboard/master/src/deploy/recommended/kubernetes-dashboard.yaml >&6 2>&1 || true
-}
-
-kube::_install_dashboard() {
-    kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/master/src/deploy/recommended/kubernetes-dashboard.yaml >&6 2>&1
-    info "Run 'kubectl proxy' and then the Kubernetes dashboard can be found at http://localhost:8001/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/"
+bootstrap::_setup_conditional_output_redirect() {
+    # https://serverfault.com/questions/414810/sh-conditional-redirection
+    exec 6>/dev/null
+    if [[ ${LEVEL} -ge 8 ]]; then
+        info "Verbose mode"
+        exec 6>&1
+    else
+        info "Silent mode"
+    fi
 }
 
 bootstrap::_setup_port_forwards() {
@@ -93,6 +87,9 @@ bootstrap::cleanup() {
 
     debug "Stopping port-forwards"
     port-forward::stop_all > uninstall.log 2>&1
+
+    debug "Uninstalling everything from [default] namespace"
+    kube::uninstall_everything_from_namespace "default" > uninstall.log 2>&1
 
     debug "Uninstalling Istio telemetry"
     telemetry::uninstall > uninstall.log 2>&1
@@ -127,6 +124,8 @@ bootstrap::all() {
 
     info "Done."
 }
+
+bootstrap::_setup_conditional_output_redirect
 
 if [[ ${PERFORM_CLEANUP_ONLY} = true ]]; then
     bootstrap::cleanup
