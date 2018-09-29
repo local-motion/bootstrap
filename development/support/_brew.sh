@@ -14,6 +14,9 @@ brew::install() {
         if [[ ${program_name} == "aws" ]]; then
             brew_name=awscli
         fi
+        if [[ ${program_name} == "helm" ]]; then
+            brew_name=kubernetes-helm
+        fi
         if [[ ${program_name} == "awless" ]]; then
             tap_name="wallix/awless";
         fi

@@ -12,6 +12,17 @@ source support/_utils.sh
 source support/_kube.sh
 source _port_forward.sh
 
+istio::port_forwards() {
+    port-forward::forward istio-system jaeger 16686 16686
+    port-forward::forward istio-system prometheus 19090 9090
+#    port-forward::forward istio-system grafana 13000 3000
+#    port-forward::forward istio-system servicegraph 18088 8088
+
+#    debug "Servicegraph - http://localhost:18088/graph"
+#    debug "Servicegraph - http://localhost:18088/force/forcegraph.html"
+#    debug "Servicegraph - http://localhost:18088/dotviz"
+}
+
 istio::uninstall() {
     info "Removing Istio from Kube cluster using Helm and Tiller"
     helm delete --purge istio || true
@@ -68,8 +79,6 @@ istio::install() {
 
         # IMPORTANT: Any namespace where you want the automated injection to work, make sure it's labeled
         kubectl label namespace default istio-injection=enabled --overwrite=true
-
-        port-forward::forward istio-system jaeger 16686 16686
 
     #    kubectl apply -f install/kubernetes/addons/grafana.yaml
     #    kubectl apply -f install/kubernetes/addons/servicegraph.yaml

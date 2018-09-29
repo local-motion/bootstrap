@@ -19,20 +19,6 @@ port-forward::forward() {
 
     pod=$(kube::get_pod "${namespace}" "${app_label}")
     kubectl -n "${namespace}" port-forward "${pod}" "${local_port}:${container_port}" > forward.log 2>&1 &
-    info "${namespace}:${app_label} - http://localhost:${local_port}"
+
+    info "Port-forward for ${namespace}:${app_label}:${container_port} -> http://localhost:${local_port}"
 }
-
-port-forward::setup() {
-    port-forward::forward istio-system prometheus 19090 9090
-#    port-forward::forward istio-system grafana 13000 3000
-#    port-forward::forward istio-system servicegraph 18088 8088
-#    kubectl -n weave port-forward "$(kubectl get -n weave pod --selector=weave-scope-component=app -o jsonpath='{.items..metadata.name}')" 54040:4040 > forward.log 2>&1 &
-
-    debug "prometheus - http://localhost:59090"
-    debug "Grafana - http://localhost:53000"
-    debug "servicegraph - http://localhost:58088/graph"
-    debug "servicegraph - http://localhost:58088/force/forcegraph.html"
-    debug "servicegraph - http://localhost:58088/dotviz"
-#    echo "weave - http://localhost:54040/"
-}
-
