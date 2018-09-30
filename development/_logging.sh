@@ -4,6 +4,10 @@
 source support/_brew.sh
 brew::install kubectl lnav stern
 
+logging::description() {
+    echo "Istio logging stack (Stern, lnav)"
+}
+
 logging::port_forwards() {
     return
 }

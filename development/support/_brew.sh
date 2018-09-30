@@ -8,8 +8,13 @@
 brew::install() {
     for program_name in "$@"
     do
-        local brew_name=${program_name}
+        local brew_name= #SC2155
         local tap_name=""
+
+        # Some brew packages use '/'. Only use last part...
+        # e.g. getsentry/tools/sentry-cli should become sentry-cli
+        # shellcheck disable=SC2001
+        brew_name=$(echo "${program_name}" | sed 's#.*/##')
 
         if [[ ${program_name} == "aws" ]]; then
             brew_name=awscli

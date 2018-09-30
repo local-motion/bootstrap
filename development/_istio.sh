@@ -12,6 +12,10 @@ source support/_utils.sh
 source support/_kube.sh
 source _port_forward.sh
 
+istio::description() {
+    echo "Istio Pilot, Mixer and Envoy"
+}
+
 istio::port_forwards() {
     port-forward::forward istio-system jaeger 16686 16686
     port-forward::forward istio-system prometheus 19090 9090
