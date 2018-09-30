@@ -7,6 +7,7 @@ LEVEL=0
 ASK_FOR_PERMISSION=true
 PERFORM_CLEANUP_ONLY=false
 PERFORM_CLEANUP_FIRST=false
+SENTRY_DSN=
 
 # shellcheck source=./support/_brew.sh
 source support/_brew.sh
@@ -24,6 +25,8 @@ source _port_forward.sh
 source _logging.sh
 # shellcheck source=./_telemetry.sh
 source _telemetry.sh
+# shellcheck source=./_application_errors.sh
+source _application_errors.sh
 
 bootstrap::usage() {
   if [ -n "$1" ]; then
@@ -33,6 +36,7 @@ bootstrap::usage() {
   fi
   echo "Usage: $0 -n namespace [-v] [-y] [--cleanup-first|--cleanup-only]"
   echo "  -n, --namespace          Everything is namespaced using this value, e.g. Kube namespace, generated names, etc."
+  echo "  -s, --sentry-dsn         Local Motion's Sentry DSN to enable error reporting to sentry"
   echo "  -y, --yes                Don't ask for permission, start bootstrapping"
   echo "  -v, --verbose            Script runs in verbose mode. This generates a fair amount of output."
   echo "  --cleanup-first          Will first delete any existing cluster with the same name"
@@ -48,6 +52,7 @@ bootstrap::usage() {
 # parse params
 while [[ "$#" -gt 0 ]]; do case $1 in
   -n|--name) NAME="$2"; shift;shift;;
+  -s|--sentry-dsn) SENTRY_DSN="$2"; shift;shift;;
   -y|--yes) ASK_FOR_PERMISSION=false;shift;;
   -v|--verbose) LEVEL=8;shift;;
   --cleanup-only) PERFORM_CLEANUP_ONLY=true;shift;;
@@ -75,6 +80,7 @@ bootstrap::_setup_port_forwards() {
 
     logging::port_forwards
     telemetry::port_forwards
+    application_errors::port_forwards
     istio::port_forwards
 }
 
@@ -91,33 +97,41 @@ bootstrap::cleanup() {
     debug "Uninstalling everything from [default] namespace"
     kube::uninstall_everything_from_namespace "default" >&6 2>&1
 
-    debug "Uninstalling Istio telemetry"
-    telemetry::uninstall >&6 2>&1
+    debug "Uninstalling $(application_errors::description)"
+    application_errors::uninstall >&6 2>&1
 
-    debug "Uninstalling Istio logging stack (Kibana, ElasticSearch, Fluentd)"
+#    debug "Uninstalling Istio telemetry"
+#    telemetry::uninstall >&6 2>&1
+
+    debug "Uninstalling $(logging::description)"
     logging::uninstall >&6 2>&1
 
-    debug "Uninstalling remaining Istio Pilot, Mixer and Envoy"
+    debug "Uninstalling remaining $(istio::description)"
     istio::uninstall >&6 2>&1
 
     debug "Uninstalling Kubernetes dashboard"
-    kube::_uninstall_dashboard >&6 2>&1
+    kube::uninstall_dashboard >&6 2>&1
 }
 
 bootstrap::all() {
     info "Start bootstrap"
 
     debug "Installing Kubernetes Dashboard"
-    kube::_install_dashboard >&6 2>&1
+    kube::install_dashboard >&6 2>&1
 
-    debug "Installing Istio Pilot, Mixer and Envoy"
+    debug "Installing $(istio::description)"
     istio::install >&6 2>&1
 
-    debug "Installing Istio logging stack (Kibana, ElasticSearch, Fluentd)"
+    debug "Installing $(logging::description)"
     logging::install >&6 2>&1
 
-    debug "Installing Istio telemetry"
-    telemetry::install >&6 2>&1
+#    debug "Installing Istio telemetry"
+#    telemetry::install >&6 2>&1
+
+    if [[ ! -z "${SENTRY_DSN}" ]]; then
+        debug "Installing $(application_errors::description)"
+        application_errors::install "${SENTRY_DSN}" >&6 2>&1
+    fi
 
     debug "Setting up port-forwards"
     bootstrap::_setup_port_forwards
