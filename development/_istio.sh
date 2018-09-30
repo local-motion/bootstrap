@@ -15,7 +15,7 @@ source _port_forward.sh
 istio::port_forwards() {
     port-forward::forward istio-system jaeger 16686 16686
     port-forward::forward istio-system prometheus 19090 9090
-#    port-forward::forward istio-system grafana 13000 3000
+    port-forward::forward istio-system grafana 13000 3000
 #    port-forward::forward istio-system servicegraph 18088 8088
 
 #    debug "Servicegraph - http://localhost:18088/graph"
@@ -30,6 +30,9 @@ istio::uninstall() {
 
     # https://github.com/koalaman/shellcheck/wiki/SC2103
     (
+        info "Removing Tiller"
+        helm reset || true
+
         pushd istio-${istio_version}
         info "Removing Helm service account"
         kubectl delete -f install/kubernetes/helm/helm-service-account.yaml || true
@@ -38,9 +41,6 @@ istio::uninstall() {
         kubectl delete -f install/kubernetes/helm/istio/charts/certmanager/templates/crds.yaml || true
         kubectl delete -f install/kubernetes/helm/istio/templates/crds.yaml -n istio-system || true
     )
-
-    info "Removing Tiller"
-    helm reset || true
 
     # Remove any kubectl port-forward processes that may still be running
     port-forward::stop_all
@@ -75,13 +75,16 @@ istio::install() {
 
         info "Installing Istio onto Kubernetes cluster using Tiller"
         helm install install/kubernetes/helm/istio --name istio --namespace istio-system \
-            --set tracing.enabled=true
+            --set tracing.enabled=true \
+            --set grafana.enabled=true \
+            --set servicegraph.enable=true
+        debug "Enabled Jaeger"
+        debug "Enabled Prometheus"
+        debug "Enabled Grafana"
+        debug "Enabled ServiceGraph"
 
         # IMPORTANT: Any namespace where you want the automated injection to work, make sure it's labeled
+        info "Labeling default namespace with [istio-injection=enabled] as to enable automated injection of sidecars"
         kubectl label namespace default istio-injection=enabled --overwrite=true
-
-    #    kubectl apply -f install/kubernetes/addons/grafana.yaml
-    #    kubectl apply -f install/kubernetes/addons/servicegraph.yaml
-    ##    kubectl apply -f install/kubernetes/addons/zipkin.yaml
     )
 }

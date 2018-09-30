@@ -86,22 +86,22 @@ bootstrap::cleanup() {
     fi
 
     debug "Stopping port-forwards"
-    port-forward::stop_all > uninstall.log 2>&1
+    port-forward::stop_all >&6 2>&1
 
     debug "Uninstalling everything from [default] namespace"
-    kube::uninstall_everything_from_namespace "default" > uninstall.log 2>&1
+    kube::uninstall_everything_from_namespace "default" >&6 2>&1
 
     debug "Uninstalling Istio telemetry"
-    telemetry::uninstall > uninstall.log 2>&1
+    telemetry::uninstall >&6 2>&1
 
     debug "Uninstalling Istio logging stack (Kibana, ElasticSearch, Fluentd)"
-    logging::uninstall > uninstall.log 2>&1
+    logging::uninstall >&6 2>&1
 
     debug "Uninstalling remaining Istio Pilot, Mixer and Envoy"
-    istio::uninstall > uninstall.log 2>&1
+    istio::uninstall >&6 2>&1
 
     debug "Uninstalling Kubernetes dashboard"
-    kube::_uninstall_dashboard > uninstall.log 2>&1
+    kube::_uninstall_dashboard >&6 2>&1
 }
 
 bootstrap::all() {
