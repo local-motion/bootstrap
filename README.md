@@ -16,6 +16,7 @@ The sample nginx application currently lives at https://github.com/errrrk/commun
     git clone git@github.com:errrrk/community-web.git
     cd community-web
     kube apply -f kube/service.yml
+    kube apply -f kube/loadbalancer.yml
     ```
 
 1. Visit the static nginx react/redux/material-ui webapp at [http://localhost:10000](http://localhost:10000)
