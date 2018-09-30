@@ -36,11 +36,11 @@ kube::uninstall_everything_from_namespace() {
     kubectl delete --all services --namespace="${namespace}"
 }
 
-kube::_uninstall_dashboard() {
+kube::uninstall_dashboard() {
     kubectl delete -f https://raw.githubusercontent.com/kubernetes/dashboard/master/src/deploy/recommended/kubernetes-dashboard.yaml >&6 2>&1 || true
 }
 
-kube::_install_dashboard() {
+kube::install_dashboard() {
     kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/master/src/deploy/recommended/kubernetes-dashboard.yaml >&6 2>&1
     info "Run 'kubectl proxy' and then the Kubernetes dashboard can be found at http://localhost:8001/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/"
 }
