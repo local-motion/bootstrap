@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: community-loadbalancer
+spec:
+  type: LoadBalancer
+  loadBalancerSourceRanges:
+  - 0.0.0.0/0
+  ports:
+  - name: community-loadbalancer
+    port: 10000
+    targetPort: 80
+    protocol: TCP
+  selector:
+    app: community-web
