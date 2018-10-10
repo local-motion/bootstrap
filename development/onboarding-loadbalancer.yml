@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: onboarding-loadbalancer
+spec:
+  type: LoadBalancer
+  loadBalancerSourceRanges:
+  - 0.0.0.0/0
+  ports:
+  - name: onboarding-loadbalancer
+    port: 10001
+    targetPort: 80
+    protocol: TCP
+  selector:
+    app: onboarding-web
