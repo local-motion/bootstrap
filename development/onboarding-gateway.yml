@@ -1,0 +1,57 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: onboarding-gateway
+spec:
+  selector:
+    istio: ingressgateway # use istio default controller
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "*"
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: onboarding-bff
+spec:
+  hosts:
+  - "*"
+  gateways:
+  - onboarding-gateway
+  http:
+  - match:
+    - uri:
+        prefix: /api/onboarding
+    rewrite:
+      uri: /
+    route:
+    - destination:
+        host: onboarding-bff
+        port:
+          number: 8085
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: onboarding-web
+spec:
+  hosts:
+  - "*"
+  gateways:
+  - onboarding-gateway
+  http:
+  # TODO: package.json specifies "." as homepage. Together with this match it _requires_ a trailing '/' for index.html, e.g. http://localhost/web/onboarding/
+  - match:
+    - uri:
+        prefix: /web/onboarding
+    rewrite:
+      uri: /
+    route:
+    - destination:
+        host: onboarding-web
+        port:
+          number: 80
