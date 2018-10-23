@@ -17,9 +17,9 @@ istio::description() {
 }
 
 istio::port_forwards() {
-    port-forward::forward istio-system jaeger 16686 16686
-    port-forward::forward istio-system prometheus 19090 9090
-    port-forward::forward istio-system grafana 13000 3000
+    port-forward::forward istio-system jaeger 16686 16686 || true
+    port-forward::forward istio-system prometheus 19090 9090 || true
+    port-forward::forward istio-system grafana 13000 3000 || true
 #    port-forward::forward istio-system servicegraph 18088 8088
 
 #    debug "Servicegraph - http://localhost:18088/graph"
@@ -29,21 +29,25 @@ istio::port_forwards() {
 
 istio::uninstall() {
     info "Removing Istio from Kube cluster using Helm and Tiller"
-    kubectl delete -f istio.yaml || true
+    kubectl delete -f istio-${istio_version}/istio.yaml || true
     kubectl label namespace default istio-injection-
 
     # https://github.com/koalaman/shellcheck/wiki/SC2103
     (
-        info "Removing Tiller"
+        info "Resetting Helm"
         helm reset || true
 
-        pushd istio-${istio_version}
-        info "Removing Helm service account"
-        kubectl delete -f install/kubernetes/helm/helm-service-account.yaml || true
+        if [ -d istio-${istio_version} ]; then
+            (
+                pushd istio-${istio_version} || exit
+                info "Removing Helm service account"
+                kubectl delete -f install/kubernetes/helm/helm-service-account.yaml || true
 
-        info "Removing CRDs"
-        kubectl delete -f install/kubernetes/helm/istio/charts/certmanager/templates/crds.yaml || true
-        kubectl delete -f install/kubernetes/helm/istio/templates/crds.yaml -n istio-system || true
+                info "Removing CRDs"
+                kubectl delete -f install/kubernetes/helm/istio/charts/certmanager/templates/crds.yaml || true
+                kubectl delete -f install/kubernetes/helm/istio/templates/crds.yaml -n istio-system || true
+            )
+        fi
     )
 
     # Remove any kubectl port-forward processes that may still be running
@@ -72,21 +76,18 @@ istio::install() {
         # https://istio.io/docs/tasks/telemetry/distributed-tracing/
         info "Installing Helm and Tiller"
         helm template install/kubernetes/helm/istio --name istio --namespace istio-system > istio.yaml
-        kubectl create namespace istio-system
-        kubectl apply -f $HOME/istio.yaml
+        kubectl create namespace istio-system || true
+        kubectl apply -f istio.yaml
 
-        info "Waiting for Tiller to be ready"
-        bash ../support/wait_for_deployment.sh -n kube-system tiller-deploy
-
-        info "Installing Istio onto Kubernetes cluster using Tiller"
-        helm install install/kubernetes/helm/istio --name istio --namespace istio-system \
-            --set tracing.enabled=true \
-            --set grafana.enabled=true \
-            --set servicegraph.enable=true
-        debug "Enabled Jaeger"
-        debug "Enabled Prometheus"
-        debug "Enabled Grafana"
-        debug "Enabled ServiceGraph"
+#        info "Installing Istio onto Kubernetes cluster using Helm"
+#        helm install install/kubernetes/helm/istio --name istio --namespace istio-system \
+#            --set tracing.enabled=true \
+#            --set grafana.enabled=true \
+#            --set servicegraph.enable=true
+#        debug "Enabled Jaeger"
+#        debug "Enabled Prometheus"
+#        debug "Enabled Grafana"
+#        debug "Enabled ServiceGraph"
 
         # IMPORTANT: Any namespace where you want the automated injection to work, make sure it's labeled
         info "Labeling default namespace with [istio-injection=enabled] as to enable automated injection of sidecars"
