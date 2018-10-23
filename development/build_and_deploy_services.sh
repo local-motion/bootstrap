@@ -2,8 +2,8 @@
 info() { printf "\\033[38;5;040mℹ\\033[0m %s\\n" "$1"; }
 error() { printf "\\033[38;5;124m✗\\033[0m %s\\n" "$1"; }
 debug() { printf "\\033[38;5;033m✓\\033[0m %s\\n" "$1"; }
-pushd () { command pushd "$@" > /dev/null;  }
-popd () { command popd "$@" > /dev/null; }
+pushd () { command pushd "$1" > /dev/null;  }
+popd () { command popd > /dev/null; }
 
 function control_c() {
 	exit 1
@@ -48,11 +48,11 @@ esac; done
 
 utils::_setup_conditional_output_redirect
 
-pushd ../..
+pushd ../.. || exit
 
 for repository_name in */; do
     info "Checking for [local_redeploy.sh] script in ${repository_name}"
-    pushd ${repository_name}
+    pushd "${repository_name}" || exit
 
     if [ -f ./local_redeploy.sh ]; then
         debug "[local_redeploy.sh] found, executing..."
@@ -62,7 +62,7 @@ for repository_name in */; do
             ./local_redeploy.sh >&6 2>&1
         fi
     fi
-    popd
+    popd || exit
 done
 
-popd
+popd || exit
