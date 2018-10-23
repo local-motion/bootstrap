@@ -116,7 +116,7 @@ clone_or_pull() {
 	if [ -d "${repository_name}" ]; then
 		info "Existing repository, pulling ${repository_name}"
 		if [[ ${dry_run} = false ]]; then
-		git pull >&6 2>&1
+		    git pull >&6 2>&1
         fi
 	else
 		info "New repository, cloning ${ssh_url} into ${TARGET_DIRECTORY}/${repository_name}"
