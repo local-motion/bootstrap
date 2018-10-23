@@ -29,7 +29,7 @@ istio::port_forwards() {
 
 istio::uninstall() {
     info "Removing Istio from Kube cluster using Helm and Tiller"
-    helm delete --purge istio || true
+    kubectl delete -f istio.yaml || true
     kubectl label namespace default istio-injection-
 
     # https://github.com/koalaman/shellcheck/wiki/SC2103
@@ -71,8 +71,9 @@ istio::install() {
         # https://istio.io/docs/setup/kubernetes/helm-install/#option-2-install-with-helm-and-tiller-via-helm-install
         # https://istio.io/docs/tasks/telemetry/distributed-tracing/
         info "Installing Helm and Tiller"
-        kubectl apply -f install/kubernetes/helm/helm-service-account.yaml
-        helm init --service-account tiller
+        helm template install/kubernetes/helm/istio --name istio --namespace istio-system > istio.yaml
+        kubectl create namespace istio-system
+        kubectl apply -f $HOME/istio.yaml
 
         info "Waiting for Tiller to be ready"
         bash ../support/wait_for_deployment.sh -n kube-system tiller-deploy
