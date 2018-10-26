@@ -2,7 +2,7 @@
 
 # shellcheck source=./support/_brew.sh
 source support/_brew.sh
-brew::install kubectl helm "getsentry/tools/sentry-cli"
+brew::install kubectl helm
 
 # shellcheck source=./support/_utils.sh
 source support/_utils.sh

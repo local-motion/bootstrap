@@ -10,6 +10,8 @@ brew::install kubectl helm
 source support/_utils.sh
 # shellcheck source=./support/_kube.sh
 source support/_kube.sh
+# shellcheck source=./_helm.sh
+source _helm.sh
 source _port_forward.sh
 
 istio::description() {
@@ -29,19 +31,14 @@ istio::port_forwards() {
 
 istio::uninstall() {
     info "Removing Istio from Kube cluster using Helm and Tiller"
-    kubectl delete -f istio-${istio_version}/istio.yaml || true
+    helm delete --purge istio || true
     kubectl label namespace default istio-injection-
 
     # https://github.com/koalaman/shellcheck/wiki/SC2103
     (
-        info "Resetting Helm"
-        helm reset || true
-
         if [ -d istio-${istio_version} ]; then
             (
                 pushd istio-${istio_version} || exit
-                info "Removing Helm service account"
-                kubectl delete -f install/kubernetes/helm/helm-service-account.yaml || true
 
                 info "Removing CRDs"
                 kubectl delete -f install/kubernetes/helm/istio/charts/certmanager/templates/crds.yaml || true
@@ -70,24 +67,28 @@ istio::install() {
         cd istio-${istio_version} || exit
 
         kubectl apply -f install/kubernetes/helm/istio/templates/crds.yaml
+
+        # If you are enabling certmanager, you also need to install its CRDs as well and
+        # wait a few seconds for the CRDS to be committed in the kube-apiserver
+        sleep 5
+
         kubectl apply -f install/kubernetes/helm/istio/charts/certmanager/templates/crds.yaml
+        sleep 5
+
+        helm::install
+        sleep 15
 
         # https://istio.io/docs/setup/kubernetes/helm-install/#option-2-install-with-helm-and-tiller-via-helm-install
         # https://istio.io/docs/tasks/telemetry/distributed-tracing/
-        info "Installing Helm and Tiller"
-        helm template install/kubernetes/helm/istio --name istio --namespace istio-system > istio.yaml
-        kubectl create namespace istio-system || true
-        kubectl apply -f istio.yaml
-
-#        info "Installing Istio onto Kubernetes cluster using Helm"
-#        helm install install/kubernetes/helm/istio --name istio --namespace istio-system \
-#            --set tracing.enabled=true \
-#            --set grafana.enabled=true \
-#            --set servicegraph.enable=true
-#        debug "Enabled Jaeger"
-#        debug "Enabled Prometheus"
-#        debug "Enabled Grafana"
-#        debug "Enabled ServiceGraph"
+        info "Installing Istio onto Kubernetes cluster using Helm"
+        helm install install/kubernetes/helm/istio --name istio --namespace istio-system \
+            --set tracing.enabled=true \
+            --set grafana.enabled=true \
+            --set servicegraph.enable=true
+        debug "Enabled Jaeger"
+        debug "Enabled Prometheus"
+        debug "Enabled Grafana"
+        debug "Enabled ServiceGraph"
 
         # IMPORTANT: Any namespace where you want the automated injection to work, make sure it's labeled
         info "Labeling default namespace with [istio-injection=enabled] as to enable automated injection of sidecars"

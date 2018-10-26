@@ -11,10 +11,10 @@ brew::install kubectl
 
 kube::_count_all_pods() {
     # all pods in all namespaces and exclude the header line
-    kubectl get pods --all-namespaces | grep -v 'istio-cleanup-secrets' | grep -c -v STATUS
+    kubectl get pods --all-namespaces | grep -v 'Completed' | grep -c -v STATUS
 }
 kube::_count_all_running_pods() {
-    kubectl get pods --all-namespaces | grep -v 'istio-cleanup-secrets' | grep -c Running
+    kubectl get pods --all-namespaces | grep -v 'Completed' | grep -c Running
 }
 
 kube::wait_until_all_pods_are_running() {

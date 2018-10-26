@@ -10,11 +10,6 @@ helm::install() {
         brew install kubernetes-helm
     fi
 
-    helm init
-    kubectl create serviceaccount --namespace kube-system tiller
-    kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
-    kubectl create clusterrolebinding tiller-cluster-admin \
-        --clusterrole=cluster-admin \
-        --serviceaccount=kube-system:default
-    kubectl patch deploy --namespace kube-system tiller-deploy -p '{"spec":{"template":{"spec":{"serviceAccount":"tiller"}}}}'
+    kubectl apply -f install/kubernetes/helm/helm-service-account.yaml
+    helm init --service-account tiller
 }
