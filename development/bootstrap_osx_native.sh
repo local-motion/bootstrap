@@ -27,6 +27,8 @@ source _logging.sh
 source _telemetry.sh
 # shellcheck source=./_application_errors.sh
 source _application_errors.sh
+# shellcheck source=./_axon.sh
+source _axon.sh
 
 bootstrap::usage() {
   if [ -n "$1" ]; then
@@ -81,6 +83,7 @@ bootstrap::_setup_port_forwards() {
     logging::port_forwards
     telemetry::port_forwards
     application_errors::port_forwards
+    axon::port_forwards
     istio::port_forwards
 }
 
@@ -99,6 +102,9 @@ bootstrap::cleanup() {
 
     debug "Uninstalling $(application_errors::description)"
     application_errors::uninstall >&6 2>&1
+
+    debug "Uninstalling $(axon::description)"
+    axon::uninstall >&6 2>&1
 
 #    debug "Uninstalling Istio telemetry"
 #    telemetry::uninstall >&6 2>&1
@@ -124,6 +130,9 @@ bootstrap::all() {
 
     debug "Installing $(logging::description)"
     logging::install >&6 2>&1
+
+    debug "Installing $(axon::description)"
+    axon::install >&6 2>&1
 
 #    debug "Installing Istio telemetry"
 #    telemetry::install >&6 2>&1
