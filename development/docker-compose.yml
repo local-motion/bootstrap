@@ -12,7 +12,7 @@ services:
 
   smokefree-initiative-service:
     build: ../../smokefree-initiative-service/.
-     image: localmotion/smokefree-initiative-service:local
+    image: localmotion/smokefree-initiative-service:local
 #    image: localmotion/smokefree-initiative-service
     restart: on-failure
     depends_on:
@@ -22,3 +22,15 @@ services:
     environment:
       - AXON_SERVERS=axonserver
       - MICRONAUT_SERVER_PORT=18086
+
+  onboarding-web:
+    build: ../../onboarding-web/.
+    image: localmotion/onboarding-web:local
+#    image: localmotion/smokefree-initiative-service
+    restart: on-failure
+    depends_on:
+    - smokefree-initiative-service
+    ports:
+    - "10080:80"
+    environment:
+    - ONBOARDING_API=http://smokefree-initiative-service:18086/graphql
