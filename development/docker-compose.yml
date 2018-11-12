@@ -11,9 +11,8 @@ services:
       - "8124:8124"
 
   smokefree-initiative-service:
-    build: ../../smokefree-initiative-service/.
-    image: localmotion/smokefree-initiative-service:local
-#    image: localmotion/smokefree-initiative-service
+#    image: localmotion/smokefree-initiative-service:local
+    image: localmotion/smokefree-initiative-service
     restart: on-failure
     depends_on:
     - axonserver
@@ -24,9 +23,8 @@ services:
       - MICRONAUT_SERVER_PORT=8086
 
   onboarding-web:
-    build: ../../onboarding-web/.
-    image: localmotion/onboarding-web:local
-#    image: localmotion/smokefree-initiative-service
+#    image: localmotion/onboarding-web:local
+    image: localmotion/onboarding-web
     restart: on-failure
     depends_on:
     - smokefree-initiative-service
