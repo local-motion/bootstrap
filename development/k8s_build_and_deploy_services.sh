@@ -51,27 +51,18 @@ utils::_setup_conditional_output_redirect
 pushd ../.. || exit
 
 for repository_name in */; do
-    info "Checking for [build.sh] script in ${repository_name}"
+    info "Checking for [local_redeploy.sh] script in ${repository_name}"
     pushd "${repository_name}" || exit
 
-    if [[ -f ./build.sh ]]; then
-        debug "[build.sh] found, executing..."
+    if [ -f ./local_redeploy.sh ]; then
+        debug "[local_redeploy.sh] found, executing..."
         if [[ ${LEVEL} -ge 8 ]]; then
-            ./build.sh --verbose >&6 2>&1
+            ./local_redeploy.sh --verbose >&6 2>&1
         else
-            ./build.sh >&6 2>&1
+            ./local_redeploy.sh >&6 2>&1
         fi
     fi
     popd || exit
 done
 
 popd || exit
-
-info "All microservices have been compiled and built. Now wrap into Docker container..."
-docker-compose build --force
-
-info "All microservices have wrapped into a Docker container. Now start them up..."
-docker-compose up -d
-
-info "Done, tail the logs"
-docker-compose logs -f
