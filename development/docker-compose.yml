@@ -1,14 +1,12 @@
 version: '3.7'
 services:
-  axonserver:
-    image: axoniq/axonserver
-    restart: on-failure
-    # Persisting axon's data is desirable
-#    volumes:
-#    - ./postgres-data:/var/lib/postgresql/data
+  mysql:
+    image: mysql:5.7.15
     ports:
-      - "8024:8024"
-      - "8124:8124"
+    - "3306:3306"
+    environment:
+    - MYSQL_ROOT_PASSWORD=root
+    - MYSQL_DATABASE=smokefree
 
   smokefree-initiative-service:
 #    image: localmotion/smokefree-initiative-service:local
@@ -19,7 +17,6 @@ services:
     ports:
     - "8086:8086"
     environment:
-      - AXON_SERVERS=axonserver
       - MICRONAUT_SERVER_PORT=8086
 
   onboarding-web:
