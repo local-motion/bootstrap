@@ -13,7 +13,7 @@ services:
     image: localmotion/smokefree-initiative-service
     restart: on-failure
     depends_on:
-    - axonserver
+    - mysql
     ports:
     - "8086:8086"
     environment:
