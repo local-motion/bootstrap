@@ -19,6 +19,10 @@ services:
     environment:
       - MICRONAUT_SERVER_PORT=8086
       - MICRONAUT_ENVIRONMENTS=local-docker
+      - MYSQL_JDBC_URL=jdbc:mysql://mysql:3306/smokefree
+      - MYSQL_USERNAME=root
+      - MYSQL_PASSWORD=root
+      - MYSQL_DRIVER_CLASS_NAME=com.mysql.jdbc.Driver
 
   onboarding-web:
 #    image: localmotion/onboarding-web:local
