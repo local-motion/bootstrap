@@ -25,3 +25,7 @@ cd ${LOCALMOTION_TARGET_DIR}/bootstrap/development
 ```
 ## Enter application
 The entry point for the application is: localhost:3000/onboarding
+
+## Import seed playgrounds
+
+Follow the steps in https://github.com/local-motion/playground-importer
