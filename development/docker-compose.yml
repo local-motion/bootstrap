@@ -9,8 +9,8 @@ services:
     - MYSQL_DATABASE=smokefree
 
   smokefree-initiative-service:
-    image: localmotion/smokefree-initiative-service:local
-#    image: localmotion/smokefree-initiative-service
+#    image: localmotion/smokefree-initiative-service:local
+    image: localmotion/smokefree-initiative-service
     restart: on-failure
     depends_on:
     - mysql
