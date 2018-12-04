@@ -33,4 +33,4 @@ services:
     ports:
     - "3000:80"
     environment:
-    - ONBOARDING_API=http://smokefree-initiative-service:8086/graphql
+    - ONBOARDING_API=http://smokefree-initiative-service:8086/api/graphql
