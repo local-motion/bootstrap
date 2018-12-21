@@ -28,8 +28,8 @@ services:
       - AWS_COGNITO_USERPOOLID=eu-west-1_WsTxYUHyC
 
   onboarding-web:
-#    image: localmotion/onboarding-web:local
-    image: localmotion/onboarding-web
+    image: localmotion/onboarding-web:local
+    # image: localmotion/onboarding-web
     restart: on-failure
     depends_on:
     - smokefree-initiative-service
@@ -37,3 +37,6 @@ services:
     - "3000:80"
     environment:
     - ONBOARDING_API=http://smokefree-initiative-service:8086/api/graphql
+    - AUTHSWITCH=#           # Leave blank to activate the http password and set to AUTHSWITCH=# to disable the HTTP password 
+    - HTPASSWD=admin:$$apr1$$Jv46odcT$$pQwDyrm.Y2NMQ0E045ip01     # Note that for docker compose escaping $ signs have been replaced by $$
+    command: /bin/bash -c "echo $${HTPASSWD} >/etc/nginx/conf.d/.htpasswd && envsubst '$${AUTHSWITCH}'< /etc/nginx/conf.d/default_conf.template > /etc/nginx/conf.d/default.conf && exec nginx -g 'daemon off;'"
