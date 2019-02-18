@@ -24,7 +24,7 @@ cd ${LOCALMOTION_TARGET_DIR}/bootstrap/development
 ./k8s_build_and_deploy_services.sh
 ```
 ## Enter application
-The entry point for the application is: localhost:3000/onboarding
+The entry point for the application is: localhost:3000/
 
 ## Import seed playgrounds
 
