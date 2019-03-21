@@ -25,7 +25,7 @@ services:
       - MYSQL_USERNAME=root
       - MYSQL_PASSWORD=root
       - MYSQL_DRIVER_CLASS_NAME=com.mysql.jdbc.Driver
-      - AWS_COGNITO_USERPOOLID=eu-west-1_WsTxYUHyC
+      - GOOGLE_MAPS_KEY=use_your_personal_key_for_localhost     # NOTE: substitute with your personal key
 
   onboarding-web:
     image: localmotion/onboarding-web:latest
